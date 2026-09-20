@@ -22,6 +22,7 @@ public class Experiment {
                     runQuickSort(size, type, writer);
                     runDeterministicSelect(size, type, writer);
                 }
+                runClosestPair(size, writer);
             }
         }
     }
@@ -34,7 +35,7 @@ public class Experiment {
         sorter.sort(array);
         long elapsed = System.nanoTime() - start;
 
-        writeRow(writer, "MergeSort", type, size, elapsed,
+        writeRow(writer, "MergeSort", type.toString(), size, elapsed,
                 sorter.getMaxRecursionDepth(), sorter.getComparisons());
     }
 
@@ -46,7 +47,7 @@ public class Experiment {
         sorter.sort(array);
         long elapsed = System.nanoTime() - start;
 
-        writeRow(writer, "QuickSort", type, size, elapsed,
+        writeRow(writer, "QuickSort", type.toString(), size, elapsed,
                 sorter.getMaxRecursionDepth(), sorter.getComparisons());
     }
 
@@ -59,11 +60,26 @@ public class Experiment {
         selector.select(array, k);
         long elapsed = System.nanoTime() - start;
 
-        writeRow(writer, "DeterministicSelect", type, size, elapsed,
+        writeRow(writer, "DeterministicSelect", type.toString(), size, elapsed,
                 selector.getMaxRecursionDepth(), selector.getComparisons());
     }
 
-    private void writeRow(FileWriter writer, String algorithm, InputType type, int size,
+    private void runClosestPair(int size, FileWriter writer) throws IOException {
+        if (size < 2) {
+            return;
+        }
+        Point[] points = generatePoints(size);
+        ClosestPairSolver solver = new ClosestPairSolver();
+
+        long start = System.nanoTime();
+        solver.findClosestPair(points);
+        long elapsed = System.nanoTime() - start;
+
+        writeRow(writer, "ClosestPair", "RANDOM", size, elapsed,
+                solver.getMaxRecursionDepth(), solver.getComparisons());
+    }
+
+    private void writeRow(FileWriter writer, String algorithm, String type, int size,
                           long timeNanos, int maxDepth, long comparisons) throws IOException {
         writer.write(String.format("%s,%s,%d,%d,%d,%d%n",
                 algorithm, type, size, timeNanos, maxDepth, comparisons));
@@ -94,5 +110,13 @@ public class Experiment {
                 break;
         }
         return array;
+    }
+
+    private Point[] generatePoints(int size) {
+        Point[] points = new Point[size];
+        for (int i = 0; i < size; i++) {
+            points[i] = new Point(RANDOM.nextDouble() * 1_000_000, RANDOM.nextDouble() * 1_000_000);
+        }
+        return points;
     }
 }
