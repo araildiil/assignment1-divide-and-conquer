@@ -37,7 +37,6 @@ public class QuickSorter {
                 sort(array, pivotIndex + 1, high, depth + 1);
                 high = pivotIndex - 1;
             }
-            depth++;
         }
     }
 

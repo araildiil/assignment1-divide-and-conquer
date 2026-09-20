@@ -26,53 +26,52 @@ public class DeterministicSelector {
             return array[low];
         }
 
-        int pivotIndex = medianOfMedians(array, low, high, depth);
-        pivotIndex = partition(array, low, high, pivotIndex);
+        int pivotValue = medianOfMediansValue(array, low, high, depth);
+        int lt = low;
+        int gt = high;
+        int i = low;
+        while (i <= gt) {
+            comparisons++;
+            if (array[i] < pivotValue) {
+                swap(array, i, lt);
+                lt++;
+                i++;
+            } else if (array[i] > pivotValue) {
+                swap(array, i, gt);
+                gt--;
+            } else {
+                i++;
+            }
+        }
 
-        if (k == pivotIndex) {
-            return array[k];
-        } else if (k < pivotIndex) {
-            return select(array, low, pivotIndex - 1, k, depth + 1);
+        if (k < lt) {
+            return select(array, low, lt - 1, k, depth + 1);
+        } else if (k > gt) {
+            return select(array, gt + 1, high, k, depth + 1);
         } else {
-            return select(array, pivotIndex + 1, high, k, depth + 1);
+            return pivotValue;
         }
     }
 
-    private int medianOfMedians(int[] array, int low, int high, int depth) {
+    private int medianOfMediansValue(int[] array, int low, int high, int depth) {
         int n = high - low + 1;
 
         if (n <= GROUP_SIZE) {
             insertionSort(array, low, high);
-            return low + (n - 1) / 2;
+            return array[low + (n - 1) / 2];
         }
 
         int numGroups = (n + GROUP_SIZE - 1) / GROUP_SIZE;
-        for (int i = 0; i < numGroups; i++) {
-            int groupLow = low + i * GROUP_SIZE;
+        for (int g = 0; g < numGroups; g++) {
+            int groupLow = low + g * GROUP_SIZE;
             int groupHigh = Math.min(groupLow + GROUP_SIZE - 1, high);
             insertionSort(array, groupLow, groupHigh);
 
             int medianIndex = groupLow + (groupHigh - groupLow) / 2;
-            swap(array, low + i, medianIndex);
+            swap(array, low + g, medianIndex);
         }
 
         return select(array, low, low + numGroups - 1, low + (numGroups - 1) / 2, depth + 1);
-    }
-
-    private int partition(int[] array, int low, int high, int pivotIndex) {
-        int pivotValue = array[pivotIndex];
-        swap(array, pivotIndex, high);
-
-        int storeIndex = low;
-        for (int i = low; i < high; i++) {
-            comparisons++;
-            if (array[i] < pivotValue) {
-                swap(array, i, storeIndex);
-                storeIndex++;
-            }
-        }
-        swap(array, storeIndex, high);
-        return storeIndex;
     }
 
     private void insertionSort(int[] array, int low, int high) {
